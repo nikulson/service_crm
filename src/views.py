@@ -3,30 +3,32 @@ import json
 
 from src import app
 from src.lib import db
-from src.models import Customer
+from src.models import Customer, Technician
 
 
-@app.route('/customer', methods=['POST', 'GET'])
-def problem():
-    if request.method == 'POST':
+@app.route('/technician', methods=['GET', 'POST'])
+def technicians():
+    if request.method == 'GET':
+        technicians = Technician.query.all()
+        data = [{'id': t.id, 'name': t.name} for t in technicians]
+        return Response(json.dumps(data), mimetype='application/json')
+    elif request.method == 'POST':
         data = request.get_json()
-        customer = Customer(name=data.get('name'), email=data.get('email'))
-        db.session.add(customer)
+        technician = Technician(name=data['name'])
+        db.session.add(technician)
         db.session.commit()
-        return Response("", status=201)
+        return Response(json.dumps({'id': technician.id}), status=201, mimetype='application/json')
 
+
+@app.route('/customer', methods=['GET', 'POST'])
+def customers():
     if request.method == 'GET':
         customers = Customer.query.all()
-        response = [
-            {
-                'id': customer.id,
-                'name': customer.name,
-                'email': customer.email
-            }
-            for customer in customers
-        ]
-        return Response(
-            json.dumps(response),
-            status=200,
-            mimetype='application/json'
-        )
+        data = [{'id': c.id, 'name': c.name, 'email': c.email} for c in customers]
+        return Response(json.dumps(data), mimetype='application/json')
+    elif request.method == 'POST':
+        data = request.get_json()
+        customer = Customer(name=data['name'], email=data['email'])
+        db.session.add(customer)
+        db.session.commit()
+        return Response(json.dumps({'id': customer.id}), status=201, mimetype='application/json')
